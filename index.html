@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voz Segura - Dashboard de Gestão Escolar</title>
+    <style>
+        :root { 
+            --roxo: #6A0DAD; 
+            --roxo-escuro: #4A0880;
+            --fundo: #F4F6F9; 
+            --branco: #FFFFFF; 
+            --texto: #2D3748; 
+            --cinza-borda: #E2E8F0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--fundo); color: var(--texto); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* TELA DE LOGIN / CADASTRO (CADASTRADO EM DOIS CARD LADO A LADO NO PC) */
+        .auth-container { max-width: 900px; margin: 80px auto; padding: 20px; width: 100%; display: flex; gap: 30px; }
+        .auth-card { background: var(--branco); flex: 1; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--cinza-borda); display: flex; flex-direction: column; justify-content: center; }
+        .auth-card h2 { color: var(--roxo); margin-bottom: 8px; font-size: 22px; }
+        .auth-card p { color: #718096; font-size: 14px; margin-bottom: 20px; }
+        
+        /* DASHBOARD PRINCIPAL (TELA CHEIA) */
+        .navbar { background: var(--roxo); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(106, 13, 173, 0.15); }
+        .navbar h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        .navbar .escola-info { text-align: right; }
+        .navbar .escola-info h3 { font-size: 16px; }
+        .navbar .escola-info p { font-size: 12px; opacity: 0.8; }
+        
+        .main-content { max-width: 1300px; margin: 40px auto; padding: 0 20px; width: 100%; flex: 1; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .dashboard-header h2 { font-size: 24px; color: var(--texto); }
+        
+        /* GRID DE DENÚNCIAS EM FORMATO WEB */
+        .denuncias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        
+        /* Cards de Denúncia Estilo Computador */
+        .card { background: var(--branco); border: 1px solid var(--cinza-borda); border-radius: 14px; padding: 24px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card h4 { color: var(--roxo); font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+        .card p { font-size: 14px; color: #4A5568; line-height: 1.6; background: #F8F9FA; padding: 15px; border-radius: 10px; margin-bottom: 15px; flex: 1; min-height: 80px; }
+        .card .meta { font-size: 12px; color: #718096; font-weight: 600; margin-bottom: 15px; display: flex; gap: 10px; }
+        
+        /* Badges de Status */
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge.pendente { background: #FFF5F5; color: #E63946; border: 1px solid #FEB2B2; }
+        .badge.investigando { background: #EBF8FF; color: #3B82F6; border: 1px solid #90CDF4; }
+        .badge.resolvido { background: #F0FFF4; color: #2A9D8F; border: 1px solid #9AE6B4; }
+
+        /* Ações do Card */
+        .acoes { display: flex; gap: 10px; }
+        .acoes button { padding: 10px; font-size: 13px; font-weight: 600; border-radius: 8px; flex: 1; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-investigar { background: #3B82F6; color: white; }
+        .btn-investigar:hover { background: #2B6CB0; }
+        .btn-resolver { background: #2A9D8F; color: white; }
+        .btn-resolver:hover { background: #227C70; }
+
+        /* Componentes de Formulário Gerais */
+        input { width: 100%; padding: 14px; border: 2px solid var(--cinza-borda); border-radius: 10px; margin: 10px 0; font-size: 15px; background: #F8F9FA; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: var(--roxo); background: #FFF; }
+        .txt-center { text-align: center; font-weight: bold; }
+        .txt-upper { text-transform: uppercase; }
+        
+        button.btn-global { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-acessar { background: var(--roxo); color: white; }
+        .btn-acessar:hover { background: var(--roxo-escuro); }
+        .btn-cadastrar { background: #2D3748; color: white; }
+        .btn-cadastrar:hover { background: #1A202C; }
+        .btn-sair { background: #E63946; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-sair:hover { background: #C53030; }
+        
+        .empty-state { text-align: center; color: #A0AEC0; padding: 80px; font-size: 16px; grid-column: 1 / -1; background: white; border-radius: 14px; border: 2px dashed var(--cinza-borda); }
+    </style>
+</head>
+<body>
+
+    <div id="loginSection" class="auth-container">
+        <div class="auth-card">
+            <h2>Acessar Painel</h2>
+            <p>Entre com as credenciais da sua escola.</p>
+            <input type="text" id="inputCodigo" placeholder="CÓDIGO DA ESCOLA" class="txt-center txt-upper">
+            <input type="password" id="inputPinLogin" placeholder="PIN DE SEGURANÇA (4 DÍGITOS)" maxlength="4" inputmode="numeric" class="txt-center">
+            <button class="btn-global btn-acessar" onclick="acessarPainel()">Entrar no Dashboard</button>
+        </div>
+
+        <div class="auth-card">
+            <h2>Cadastrar Instituição</h2>
+            <p>Gere um código automático para seus alunos.</p>
+            <input type="text" id="inputNome" placeholder="Nome Completo do Colégio / Escola">
+            <input type="password" id="inputPinCadastro" placeholder="Crie um PIN de Acesso (4 números)" maxlength="4" inputmode="numeric" class="txt-center">
+            <button class="btn-global btn-cadastrar" onclick="cadastrarEscola()">Cadastrar e Gerar Código</button>
+        </div>
+    </div>
+
+    <div id="dashboardSection" style="display:none; flex-direction: column; flex: 1;">
+        <div class="navbar">
+            <h1>Voz Segura — Gestão de Ocorrências</h1>
+            <div class="escola-info">
+                <h3 id="tituloHeader">Nome da Escola</h3>
+                <p id="subtituloHeader">Código Ativo: ------</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="dashboard-header">
+                <h2>Ocorrências Recentes (Últimas 24 horas)</h2>
+                <button class="btn-sair" onclick="location.reload()">Sair do Sistema</button>
+            </div>
+
+            <div class="denuncias-grid" id="listaDenuncias">
+                </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, where, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC3r-aXIf7U-qIDva-9ju2maH0D12YkKkI",
+        authDomain: "voz-segura-db5ba.firebaseapp.com",
+        projectId: "voz-segura-db5ba",
+        storageBucket: "voz-segura-db5ba.firebasestorage.app",
+        messagingSenderId: "359447497763",
+        appId: "1:359447497763:web:5dd81ed7e3ceb42a1ff596",
+        measurementId: "G-G7QQ4ESWJ2"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+
+    window.cadastrarEscola = async () => {
+        const nome = document.getElementById('inputNome').value.trim();
+        const pin = document.getElementById('inputPinCadastro').value.trim();
+        
+        if (!nome || !pin) return alert("Preencha todos os campos do cadastro!");
+        if (pin.length !== 4 || isNaN(pin)) return alert("O PIN deve conter exatamente 4 números!");
+
+        const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        try {
+            await setDoc(doc(db, "escolas", codigo), { nome, pin });
+            alert("Sucesso!\n\nCódigo da Escola: " + codigo + "\nPIN criado: " + pin);
+            document.getElementById('inputCodigo').value = codigo;
+            document.getElementById('inputNome').value = "";
+            document.getElementById('inputPinCadastro').value = "";
+        } catch (erro) {
+            alert("Erro ao cadastrar instituição: " + erro.message);
+        }
+    };
+
+    window.mudarStatus = async (id, novoStatus) => {
+        try {
+            await updateDoc(doc(db, "denuncias", id), { status: novoStatus });
+        } catch (erro) {
+            alert("Erro ao atualizar o caso: " + erro.message);
+        }
+    };
+
+    window.acessarPainel = async () => {
+        const codigo = document.getElementById('inputCodigo').value.trim().toUpperCase();
+        const pinDigitado = document.getElementById('inputPinLogin').value.trim();
+        
+        if (!codigo || !pinDigitado) return alert("Insira o Código e o PIN da escola!");
+
+        const snap = await getDoc(doc(db, "escolas", codigo));
+        
+        if (snap.exists()) {
+            const dadosEscola = snap.data();
+            if (dadosEscola.pin !== pinDigitado) return alert("PIN de Segurança incorreto!");
+
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'flex';
+            document.getElementById('tituloHeader').textContent = dadosEscola.nome;
+            document.getElementById('subtituloHeader').textContent = "Código da Unidade: " + codigo;
+
+            onSnapshot(query(collection(db, "denuncias"), where("codigoEscola", "==", codigo)), (snap) => {
+                const grid = document.getElementById('listaDenuncias');
+                grid.innerHTML = "";
+                let totalExibidas = 0;
+                
+                const agora = Date.now();
+                const limite24h = 24 * 60 * 60 * 1000;
+
+                snap.forEach(d => {
+                    const data = d.data();
+                    const id = d.id;
+                    const statusAtual = data.status || "Pendente";
+                    
+                    let tempoCriacao = data.timestampCriacao ? data.timestampCriacao.toMillis() : agora;
+                    if (agora - tempoCriacao > limite24h) return;
+
+                    totalExibidas++;
+
+                    let botoesAcao = "";
+                    if (statusAtual === "Pendente") {
+                        botoesAcao = `
+                            <button class="btn-investigar" onclick="mudarStatus('${id}', 'Investigando')">🔎 Investigar</button>
+                            <button class="btn-resolver" onclick="mudarStatus('${id}', 'Resolvido')">✓ Resolver</button>
+                        `;
+                    } else if (statusAtual === "Investigando") {
+                        botoesAcao = `
+                            <button class="btn-resolver" onclick="mudarStatus('${id}', 'Resolvido')">✓ Concluir Caso</button>
+                        `;
+                    }
+
+                    grid.innerHTML += `
+                        <div class="card">
+                            <div>
+                                <div class="card-header">
+                                    <h4>🚨 Bullying: ${data.tipo}</h4>
+                                    <span class="badge ${statusAtual.toLowerCase()}">${statusAtual}</span>
+                                </div>
+                                <p>${data.descricao}</p>
+                            </div>
+                            <div>
+                                <div class="meta">
+                                    <span>📅 Data: ${data.data}</span>
+                                    <span>🕒 Horário: ${data.hora}</span>
+                                </div>
+                                <div class="acoes">
+                                    ${botoesAcao}
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                if (totalExibidas === 0) {
+                    grid.innerHTML = `<div class="empty-state">Nenhuma denúncia ativa recebida nas últimas 24 horas para este colégio.</div>`;
+                }
+            });
+        } else {
+            alert("Código de escola não encontrado.");
+        }
+    };
+</script>
+</body>
+</html>
